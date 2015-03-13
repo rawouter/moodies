@@ -1,6 +1,6 @@
 import json
 import logging
-import pusherclient
+from PythonPusherClient import pusherclient
 import sys
 import time
 
@@ -38,6 +38,7 @@ class MoodiesServer:
         once connected
         """
         self.pusher.connection.bind('pusher:connection_established', self._callback_connection_estabished)
+        self.pusher.connection.bind('default', self._callback_default)
         self.pusher.connect()
 
     def _callback_connection_estabished(self, data):
@@ -54,6 +55,9 @@ class MoodiesServer:
         for key, moodies_channel in self.channels.iteritems():
             self._setup_mood_channels_callbacks(moodies_channel.pusher_channel)
 
+    def _callback_default(self, channel_name, msg):
+        self.logger.debug("DEFAULT HANDLER: {} - {}".format(channel_name, msg))
+
     def _setup_config_channel_callbacks(self, pusher_channel_config):
         """
         Configure the config channel callbacks
@@ -66,23 +70,26 @@ class MoodiesServer:
         """
         pusher_channel.bind('pusher_internal:member_added', self._callback_joining_member)
         pusher_channel.bind('pusher_internal:member_removed', self._callback_leaving_member)
-        pusher_channel.bind('client-button_pushed', self._callback_button_pushed)
+        pusher_channel.bind('client-button-pushed', self._callback_button_pushed)
 
-    def _callback_joining_member(self, msg):
+    def _callback_joining_member(self, channel_name, msg):
         #2015-03-11 22:35:27,217 - pusherclient.connection - INFO - Connection: Message -
         #{"event":"pusher_internal:member_added","data":"{\"user_info\": {\"name\": \"Mr Wouters\"},
         #        \"user_id\": \"rawouter\"}","channel":"presence-moodies"}
-        msg = json.loads(msg)
-        self.logger.info('{} entering'.format(msg['user_id']))
+        message = Message(msg)
+        self.logger.info('{} entering {}'.format(message.user_id, channel_name))
 
-    def _callback_leaving_member(self, msg):
+    def _callback_leaving_member(self, channel_name, msg):
         #2015-03-11 22:35:36,698 - pusherclient.connection - INFO - Connection: Message -
         #{"event":"pusher_internal:member_removed","data":"{\"user_id\":\"rawouter\"}","channel":"presence-moodies"}
-        self.logger.info('Leaving member')
+        message = Message(msg)
+        self.logger.info('{} left {}'.format(message.user_id, channel_name))
 
-    def _callback_button_pushed(self, msg):
-        self.logger.info('button_pushed event')
-        self.logger.debug(msg)
+    def _callback_button_pushed(self, channel_name, msg):
+        message = Message(msg)
+        self.logger.info('{} pushed the button'.format(message.user_id))
+        self.logger.debug(message.value)
+        #self.channels[channel_name]
 
 class MoodiesChannel:
     def __init__(self, pusher_channel):
@@ -95,6 +102,18 @@ class Mood:
     def __init__(self):
         self.excited = 0
         self.nervous = 0
+
+class Message:
+    def __init__(self, msg):
+        msg = json.loads(msg)
+        if msg.has_key('value'):
+            self.value = msg['value']
+        else:
+            self.value = None
+        if msg.has_key('user_id'):
+            self.user_id = msg['user_id']
+        else:
+            self.user_id = None
 
 def start_logging():
     module_logger = logging.getLogger()

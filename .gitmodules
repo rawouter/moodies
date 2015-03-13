@@ -1,0 +1,3 @@
+[submodule "python/PythonPusherClient"]
+	path = python/PythonPusherClient
+	url = git@github.com:RaphYot/PythonPusherClient.git
