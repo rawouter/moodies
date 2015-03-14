@@ -3,9 +3,9 @@ import logging
 from PythonPusherClient import pusherclient
 import sys
 import time
+import types
 
 # Configuration
-# TODO: Move this out in other files
 APPKEY = '2c987384b72778026687'
 SECRET = '8440acd6ba1e0bfec3d4'
 CONNECTED_CHANNELS = ['presence-moodies']
@@ -16,7 +16,13 @@ USERDATA = {
     }
 }
 
+
 class MoodiesServer:
+    """
+    Main server class, will connect to pusher, listen to messages, compute them and answer.
+    """
+
+
     def __init__(self):
         self.logger = logging.getLogger('moodies.Server')
         self.killed = False
@@ -73,15 +79,10 @@ class MoodiesServer:
         pusher_channel.bind('client-button-pushed', self._callback_button_pushed)
 
     def _callback_joining_member(self, channel_name, msg):
-        #2015-03-11 22:35:27,217 - pusherclient.connection - INFO - Connection: Message -
-        #{"event":"pusher_internal:member_added","data":"{\"user_info\": {\"name\": \"Mr Wouters\"},
-        #        \"user_id\": \"rawouter\"}","channel":"presence-moodies"}
         message = Message(msg)
         self.logger.info('{} entering {}'.format(message.user_id, channel_name))
 
     def _callback_leaving_member(self, channel_name, msg):
-        #2015-03-11 22:35:36,698 - pusherclient.connection - INFO - Connection: Message -
-        #{"event":"pusher_internal:member_removed","data":"{\"user_id\":\"rawouter\"}","channel":"presence-moodies"}
         message = Message(msg)
         self.logger.info('{} left {}'.format(message.user_id, channel_name))
 
@@ -91,40 +92,74 @@ class MoodiesServer:
         self.logger.debug(message.value)
         #self.channels[channel_name]
 
+
 class MoodiesChannel:
+    """
+    Channel class representing a chat room (pusher channel) and it's mood (Mood class)
+    """
+
+
     def __init__(self, pusher_channel):
         self.logger = logging.getLogger('moodies.MoodiesChannel')
         self.pusher_channel = pusher_channel
         self.name = pusher_channel.name
         self.mood = Mood()
 
+
 class Mood:
+    """
+    Contains mood values
+    """
+
+
     def __init__(self):
         self.excited = 0
         self.nervous = 0
 
-class Message:
-    def __init__(self, msg):
-        msg = json.loads(msg)
-        if msg.has_key('value'):
-            self.value = msg['value']
-        else:
-            self.value = None
-        if msg.has_key('user_id'):
-            self.user_id = msg['user_id']
-        else:
-            self.user_id = None
+    def decrease_all_moods(self):
+        for key in vars(self):
+            mood = self[key]
+            assert type(mood) is types.IntType, 'Mood class has a non Integer variable: {}'.format(key)
+            if mood > 0:
+                mood -= 1
 
-def start_logging():
+    def increase(self, mood_var):
+        if mood_var < 100:
+            mood_var += 1
+        else:
+            mood_var = 100
+
+
+class Message:
+    """
+    Parse a json object
+    """
+
+
+    def __init__(self, msg):
+        assert type(msg) in types.StringTypes, 'Message instance did not receive a String'
+        msg = json.loads(msg)
+        self.value = self._get_json_val('value', msg)
+        self.user_id = self._get_json_val('user_id', msg)
+
+    def _get_json_val(self, key, json_msg):
+        if json_msg.has_key(key):
+            return json_msg[key]
+        else:
+            return None
+
+
+def start_logger():
     module_logger = logging.getLogger()
     module_logger.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s - %(name)s.%(lineno)d - %(levelname)s - %(message)s')
+    #formatter = logging.Formatter('%(asctime)s - %(name)s.%(lineno)d - %(levelname)s - %(message)s')
+    formatter = logging.Formatter('%(levelname)s - %(name)s.%(lineno)d - %(message)s')
     ch = logging.StreamHandler(sys.stdout)
     ch.setFormatter(formatter)
     module_logger.addHandler(ch)
 
 def main():
-    start_logging()
+    start_logger()
     server = MoodiesServer()
     server.run_forever()
 

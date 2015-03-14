@@ -26,7 +26,7 @@ global pusher
 def connect_handler(data):
     channel = pusher.subscribe('presence-moodies')
     time.sleep(1)
-    channel.trigger('client-button-pushed', {'value': '2', 'user_id': user_data['user_id']})
+    channel.trigger('client-button-pushed', {'value': 2, 'user_id': user_data['user_id']})
     logging.info('send button_pushed')
 
 pusher = pusherclient.Pusher(app_key, secret=secret, user_data=user_data)
