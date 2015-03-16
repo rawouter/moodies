@@ -142,6 +142,11 @@ class MoodiesUser:
     def __init__(self, user_id):
         self.user_id = user_id
         self.moods = Moods()
+        self.top_mood = Mood('', 0, '000000')
+
+    def compute_top_mood(self):
+        self.top_mood = self.moods.compute_top_mood()
+        return self.top_mood
 
 
 class MoodiesChannel:
@@ -158,8 +163,14 @@ class MoodiesChannel:
         self.users = []
 
     def recompute_mood(self):
-        #TODO
-        pass
+        moods = Moods()
+        for mood in moods.get_mood_list():
+            for user in self.users.keys():
+                pass
+
+
+
+Mood = namedtuple('Mood', ['name', 'value', 'color'])
 
 class Moods:
 
@@ -168,9 +179,20 @@ class Moods:
     """
 
     def __init__(self):
-        Mood = namedtuple('Mood', ['name', 'value', 'color'])
         self.excited = Mood('excited', 0, '00FF00')
         self.nervous = Mood('nervous', 0, 'FF0000')
+
+    def get_mood(self, mood):
+        """
+        Return the mood variable but takes a string as argument
+        """
+        return getattr(self, mood)
+
+    def get_mood_list(self):
+        """
+        Reutrn all moods as a string
+        """
+        return vars(self)
 
     def decrease_all_moods(self, val):
         for key in vars(self):
