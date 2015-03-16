@@ -211,6 +211,14 @@ class Moods:
         else:
             mood_var.value = 100
 
+    def compute_top_mood(self):
+        top = Mood('', 0, '000000')
+        max = 0
+        for key in vars(self):
+            if self[key].value > max:
+                top = self(key)
+                max = top.value
+        return top
 
 class Message:
 
