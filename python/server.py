@@ -109,8 +109,29 @@ class MoodiesServer:
         message = Message(msg)
         self.logger.info('{} pushed the button'.format(message.user_id))
         self.logger.debug(message.value)
-        #self.channels[channel_name]
+        # Hardocding values for now, MVP. We could have a config file/DB later for that.
+        # Arduino happy
+        if message.value == int('0b10', 2):
+            self._is_happy(message.user_id, channel_name)
+        # Arduino unhappy
+        elif message.value == int('0b100000', 2):
+            self._is_nervous(message.user_id, channel_name)
 
+    def _is_happy(self, user_id, channel_name):
+        moods = self.users[user_id].moods
+        moods.increase(moods.happy)
+        self.send_text(channel_name, user_id, '{} is happy'.format(user_id))
+        self.channels[channel_name].recompute_mood()
+
+    def _is_nervous(self, user_id, channel_name):
+        moods = self.users[user_id].moods
+        moods.increase(moods.nervous)
+        self.send_text(channel_name, user_id, '{} is nervous'.format(user_id))
+        self.channels[channel_name].recompute_mood()
+
+    def send_text(self, channel_name, user_id, text):
+        #TODO
+        pass
 
 class MoodiesUser:
 
@@ -136,6 +157,9 @@ class MoodiesChannel:
         self.moods = Moods()
         self.users = []
 
+    def recompute_mood(self):
+        #TODO
+        pass
 
 class Moods:
 
