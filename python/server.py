@@ -86,12 +86,11 @@ class MoodiesServer:
         """
         Configure the private-* moodies channel callbacks
         """
-        cjm = partial(self._callback_joining_member, channel_name = pusher_channel.name)
-        pusher_channel.bind('pusher_internal:member_added', cjm)
-        clm = partial(self._callback_leaving_member, channel_name = pusher_channel.name)
-        pusher_channel.bind('pusher_internal:member_removed', clm)
-        bp = partial(self._callback_button_pushed, channel_name = pusher_channel.name)
-        pusher_channel.bind('client-button-pushed', bp)
+        def gen_callback(fn):
+            return partial(fn, channel_name = pusher_channel.name)
+        pusher_channel.bind('pusher_internal:member_added', gen_callback(self._callback_joining_member))
+        pusher_channel.bind('pusher_internal:member_removed', gen_callback(self._callback_leaving_member))
+        pusher_channel.bind('client-button-pushed', gen_callback(self._callback_button_pushed))
 
 
     def _callback_joining_member(self, msg, channel_name):
