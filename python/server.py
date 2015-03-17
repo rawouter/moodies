@@ -17,6 +17,8 @@ USERDATA = {
       'name': 'Moodies Server'
     }
 }
+SLEEPTIME = 10
+MOOD_DECREASE_RATE = 20
 
 
 class MoodiesServer:
@@ -39,8 +41,12 @@ class MoodiesServer:
         """
         self._connect_to_pusher()
         while not self.killed:
-            time.sleep(1)
-
+            time.sleep(SLEEPTIME)
+            for user_name, user in self.users.iteritems():
+                user.moods_container.decrease_all_moods(1)
+                user.compute_top_mood()
+            for channel_name, channel in self.channels.iteritems():
+                channel.recompute_mood()
 
     def _connect_to_pusher(self):
         """
@@ -67,7 +73,7 @@ class MoodiesServer:
             self._setup_mood_channels_callbacks(moodies_channel.pusher_channel)
 
     def _callback_default(self, msg):
-        self.logger.debug("!!! DEFAULT PUSHER EVENT HANDLER !!! {} - {}".format(channel_name, msg))
+        self.logger.debug("!!! DEFAULT PUSHER EVENT HANDLER !!! {}".format(msg))
 
 
     def _setup_config_channel_callbacks(self, pusher_channel_config):
@@ -113,27 +119,24 @@ class MoodiesServer:
         self.logger.info('{} pushed the button'.format(message.user_id))
         self.logger.debug(message.value)
         # Hardocding values for now, MVP. We could have a config file/DB later for that.
-        # Arduino happy
+        # Arduino excited
         if message.value == int('0b10', 2):
-            self._is_happy(message.user_id, channel_name)
-        # Arduino unhappy
+            self._is_excited(message.user_id, channel_name)
+        # Arduino nervous
         elif message.value == int('0b100000', 2):
             self._is_nervous(message.user_id, channel_name)
 
-    def _is_happy(self, user_id, channel_name):
-        moods = self.users[user_id].moods
-        moods.increase(moods.happy)
-        self.send_text(channel_name, user_id, '{} is happy'.format(user_id))
+    def _is_excited(self, user_id, channel_name):
+        self.users[user_id].moods_container.increase('excited')
+        self.send_text(channel_name, user_id, '{} is excited'.format(user_id))
         self.channels[channel_name].recompute_mood()
 
     def _is_nervous(self, user_id, channel_name):
-        moods = self.users[user_id].moods
-        moods.increase(moods.nervous)
+        self.users[user_id].moods_container.increase('nervous')
         self.send_text(channel_name, user_id, '{} is nervous'.format(user_id))
         self.channels[channel_name].recompute_mood()
 
     def send_text(self, channel_name, user_id, text):
-        #TODO
         pass
 
 class MoodiesUser:
