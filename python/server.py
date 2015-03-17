@@ -1,4 +1,3 @@
-from collections import namedtuple
 from functools import partial
 import json
 import logging
@@ -145,84 +144,88 @@ class MoodiesUser:
 
     def __init__(self, user_id):
         self.user_id = user_id
-        self.moods = Moods()
-        self.top_mood = Mood('', 0, '000000')
+        self.moods_container = MoodsContainer()
+        self.top_mood = self.moods_container.moods['default']
 
     def compute_top_mood(self):
-        self.top_mood = self.moods.compute_top_mood()
+        self.top_mood = self.moods_container.compute_top_mood()
         return self.top_mood
 
 
 class MoodiesChannel:
 
     """
-    Channel class representing a chat room (pusher channel) and it's moods (Moods class)
+    Channel class representing a chat room (pusher channel) and it's moods (MoodsContainer class)
     """
 
     def __init__(self, pusher_channel):
         self.logger = logging.getLogger('moodies.MoodiesChannel')
         self.pusher_channel = pusher_channel
         self.name = pusher_channel.name
-        self.moods = Moods()
+        self.moods_container = MoodsContainer()
+        self.current_mood = self.moods_container.moods['default']
         self.users = []
 
     def recompute_mood(self):
-        moods = Moods()
-        for mood in moods.get_mood_list():
-            for user in self.users.keys():
-                pass
+        moods = self.moods_container.moods
+        for mood_name, mood in moods.iteritems():
+            mood.value = 0
+            if not len(self.users):
+                continue # We just reset moods to 0 if there are no more users
+            for user in self.users:
+                mood.value += user.moods_container.moods[mood_name].value
+            mood.value = mood.value / len(self.users)
+        self.current_mood = self.moods_container.compute_top_mood()
 
 
+class Mood:
+    """
+    Contains a mood parameters
+    """
 
-Mood = namedtuple('Mood', ['name', 'value', 'color'])
+    def __init__(self, name, value, color):
+        self.name = name
+        self.value = value
+        self.color = color
 
-class Moods:
+class MoodsContainer:
 
     """
     Contains Mood values
     """
 
     def __init__(self):
-        self.excited = Mood('excited', 0, '00FF00')
-        self.nervous = Mood('nervous', 0, 'FF0000')
-
-    def get_mood(self, mood):
-        """
-        Return the mood variable but takes a string as argument
-        """
-        return getattr(self, mood)
-
-    def get_mood_list(self):
-        """
-        Reutrn all moods as a string
-        """
-        return vars(self)
+        self.moods = {
+            'default': Mood('', 0, '000000'),
+            'excited': Mood('excited', 0, '00FF00'),
+            'nervous': Mood('nervous', 0, 'FF0000')
+        }
 
     def decrease_all_moods(self, val):
-        for key in vars(self):
-            mood = self[key]
-            self.decrease(mood, val)
+        for key in self.moods:
+            self.decrease(key, val)
 
-    def decrease(self, mood_var, val=10):
-        if mood_var.value > val:
-            mood_var.value -= val
+    def decrease(self, mood_name, val=20):
+        if self.moods[mood_name].value > val:
+            self.moods[mood_name].value -= val
         else:
-            mood_var.value = 0
+            self.moods[mood_name].value = 0
 
-    def increase(self, mood_var, val=10):
-        if mood_var.value < (100-val):
-            mood_var.value += val
+    def increase(self, mood_name, val=20):
+        if self.moods[mood_name].value < (100-val):
+            self.moods[mood_name].value += val
         else:
-            mood_var.value = 100
+            self.moods[mood_name].value = 100
 
     def compute_top_mood(self):
-        top = Mood('', 0, '000000')
+        top_mood = self.moods['default']
         max = 0
-        for key in vars(self):
-            if self[key].value > max:
-                top = self(key)
-                max = top.value
-        return top
+        for mood_name, mood in self.moods.iteritems():
+            if mood.value > max:
+                top_mood = mood
+                max = mood.value
+        return top_mood
+
 
 class Message:
 
@@ -237,7 +240,7 @@ class Message:
         self.user_id = self._get_json_val('user_id', msg)
 
     def _get_json_val(self, key, json_msg):
-        if json_msg.has_key(key):
+        if key in json_msg:
             return json_msg[key]
         else:
             return None
