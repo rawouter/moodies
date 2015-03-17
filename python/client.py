@@ -33,4 +33,4 @@ pusher = pusherclient.Pusher(app_key, secret=secret, user_data=user_data)
 pusher.connection.bind('pusher:connection_established', connect_handler)
 pusher.connect()
 
-time.sleep(3)
+time.sleep(30)
