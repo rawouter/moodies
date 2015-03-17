@@ -1,11 +1,12 @@
 from collections import namedtuple
+from functools import partial
 import json
 import logging
 import sys
 import time
 import types
 
-from PythonPusherClient import pusherclient
+import pusherclient
 
 # Configuration
 APPKEY = '2c987384b72778026687'
@@ -66,8 +67,8 @@ class MoodiesServer:
         for key, moodies_channel in self.channels.iteritems():
             self._setup_mood_channels_callbacks(moodies_channel.pusher_channel)
 
-    def _callback_default(self, channel_name, msg):
-        self.logger.warn("!!! DEFAULT HANDLER !!! {} - {}".format(channel_name, msg))
+    def _callback_default(self, msg):
+        self.logger.debug("!!! DEFAULT PUSHER EVENT HANDLER !!! {} - {}".format(channel_name, msg))
 
 
     def _setup_config_channel_callbacks(self, pusher_channel_config):
@@ -80,12 +81,15 @@ class MoodiesServer:
         """
         Configure the private-* moodies channel callbacks
         """
-        pusher_channel.bind('pusher_internal:member_added', self._callback_joining_member)
-        pusher_channel.bind('pusher_internal:member_removed', self._callback_leaving_member)
-        pusher_channel.bind('client-button-pushed', self._callback_button_pushed)
+        cjm = partial(self._callback_joining_member, channel_name = pusher_channel.name)
+        pusher_channel.bind('pusher_internal:member_added', cjm)
+        clm = partial(self._callback_leaving_member, channel_name = pusher_channel.name)
+        pusher_channel.bind('pusher_internal:member_removed', clm)
+        bp = partial(self._callback_button_pushed, channel_name = pusher_channel.name)
+        pusher_channel.bind('client-button-pushed', bp)
 
 
-    def _callback_joining_member(self, channel_name, msg):
+    def _callback_joining_member(self, msg, channel_name):
         """
         Create a new MoodiesUser and store it for the first time we see the user.
         Append the user to the channel list of users.
@@ -97,7 +101,7 @@ class MoodiesServer:
         if self.users[message.user_id] not in self.channels[channel_name].users:
             self.channels[channel_name].users.append(self.users[message.user_id])
 
-    def _callback_leaving_member(self, channel_name, msg):
+    def _callback_leaving_member(self, msg, channel_name):
         """
         Remove users from channel users list.
         """
@@ -105,7 +109,7 @@ class MoodiesServer:
         self.logger.info('{} left {}'.format(message.user_id, channel_name))
         self.channels[channel_name].users.remove(self.users[message.user_id])
 
-    def _callback_button_pushed(self, channel_name, msg):
+    def _callback_button_pushed(self, msg, channel_name):
         message = Message(msg)
         self.logger.info('{} pushed the button'.format(message.user_id))
         self.logger.debug(message.value)
