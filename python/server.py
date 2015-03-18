@@ -54,7 +54,6 @@ class MoodiesServer:
         once connected
         """
         self.pusher.connection.bind('pusher:connection_established', self._callback_connection_estabished)
-        self.pusher.connection.bind('default', self._callback_default)
         self.pusher.connect()
 
 
@@ -71,9 +70,6 @@ class MoodiesServer:
             self.channels[c] = MoodiesChannel(self.pusher.subscribe(c))
         for key, moodies_channel in self.channels.iteritems():
             self._setup_mood_channels_callbacks(moodies_channel.pusher_channel)
-
-    def _callback_default(self, msg):
-        self.logger.debug("!!! DEFAULT PUSHER EVENT HANDLER !!! {}".format(msg))
 
 
     def _setup_config_channel_callbacks(self, pusher_channel_config):
