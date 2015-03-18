@@ -14,10 +14,10 @@ user_data = {
 }
 
 # Logging handler
-root = logging.getLogger()
-root.setLevel(logging.INFO)
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 ch = logging.StreamHandler(sys.stdout)
-root.addHandler(ch)
+logger.addHandler(ch)
 
 global pusher
 
@@ -25,9 +25,17 @@ global pusher
 # to subscribe when able
 def connect_handler(data):
     channel = pusher.subscribe('presence-moodies')
+    channel.bind('client-new-color', callback_color)
+    channel.bind('client-text-message', callback_text)
     time.sleep(1)
     channel.trigger('client-button-pushed', {'value': 2, 'user_id': user_data['user_id']})
     logging.info('send button_pushed')
+
+def callback_color(msg):
+    logger.info('%% Received new color: {}'.format(msg))
+
+def callback_text(msg):
+    logger.info('%% Received text message: {}'.format(msg))
 
 pusher = pusherclient.Pusher(app_key, secret=secret, user_data=user_data)
 pusher.connection.bind('pusher:connection_established', connect_handler)
