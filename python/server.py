@@ -17,8 +17,8 @@ USERDATA = {
       'name': 'Moodies Server'
     }
 }
-SLEEPTIME = 10
-MOOD_DECREASE_RATE = 20
+SLEEPTIME = 2
+MOOD_DECREASE_RATE = 5
 
 
 class MoodiesServer:
@@ -33,6 +33,7 @@ class MoodiesServer:
         self.pusher = pusherclient.Pusher(APPKEY, secret=SECRET, user_data=USERDATA)
         self.channels = {}
         self.users = {}
+        self.user_id = USERDATA['user_id']
 
     def run_forever(self):
         """
@@ -43,10 +44,11 @@ class MoodiesServer:
         while not self.killed:
             time.sleep(SLEEPTIME)
             for user_name, user in self.users.iteritems():
-                user.moods_container.decrease_all_moods(1)
+                user.moods_container.decrease_all_moods(MOOD_DECREASE_RATE)
                 user.compute_top_mood()
             for channel_name, channel in self.channels.iteritems():
-                channel.recompute_mood()
+                if channel.recompute_mood():
+                    self.send_color(channel, Message(self.user_id, channel.current_mood.color))
 
     def _connect_to_pusher(self):
         """
@@ -194,7 +196,7 @@ class MoodsContainer:
 
     def __init__(self):
         self.moods = {
-            'default': Mood('', 0, '000000'),
+            'default': Mood('noMood', 0, '000000'),
             'excited': Mood('excited', 0, '00FF00'),
             'nervous': Mood('nervous', 0, 'FF0000')
         }
