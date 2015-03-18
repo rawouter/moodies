@@ -96,7 +96,8 @@ class MoodiesServer:
         Create a new MoodiesUser and store it for the first time we see the user.
         Append the user to the channel list of users.
         """
-        message = Message(msg)
+        message = Message()
+        message.feed_with_json(msg)
         self.logger.info('{} entering {}'.format(message.user_id, channel_name))
         if message.user_id not in self.users.keys():
             self.users[message.user_id] = MoodiesUser(message.user_id)
@@ -107,12 +108,14 @@ class MoodiesServer:
         """
         Remove users from channel users list.
         """
-        message = Message(msg)
+        message = Message()
+        message.feed_with_json(msg)
         self.logger.info('{} left {}'.format(message.user_id, channel_name))
         self.channels[channel_name].users.remove(self.users[message.user_id])
 
     def _callback_button_pushed(self, msg, channel_name):
-        message = Message(msg)
+        message = Message()
+        message.feed_with_json(msg)
         self.logger.info('{} pushed the button'.format(message.user_id))
         self.logger.debug(message.value)
         # Hardocding values for now, MVP. We could have a config file/DB later for that.
@@ -124,17 +127,41 @@ class MoodiesServer:
             self._is_nervous(message.user_id, channel_name)
 
     def _is_excited(self, user_id, channel_name):
+        message = Message(self.user_id)
+        channel = self.channels[channel_name]
+
         self.users[user_id].moods_container.increase('excited')
-        self.send_text(channel_name, user_id, '{} is excited'.format(user_id))
-        self.channels[channel_name].recompute_mood()
+        if channel.recompute_mood():
+            message.value = channel.current_mood.color
+            self.send_color(channel, message)
+
+        message.value = '{} is excited'.format(user_id)
+        self.send_text(channel, message)
 
     def _is_nervous(self, user_id, channel_name):
-        self.users[user_id].moods_container.increase('nervous')
-        self.send_text(channel_name, user_id, '{} is nervous'.format(user_id))
-        self.channels[channel_name].recompute_mood()
+        message = Message(self.user_id)
+        channel = self.channels[channel_name]
 
-    def send_text(self, channel_name, user_id, text):
-        pass
+        self.users[user_id].moods_container.increase('nervous')
+        if channel.recompute_mood():
+            message.value = channel.current_mood.color
+            self.send_color(channel, message)
+
+        message.value = '{} is nervous'.format(user_id)
+        self.send_text(channel, message)
+
+
+    def send_color(self, moodies_channel, message):
+        """
+        Send a pusher client-new-color even in pusher channel
+        """
+        moodies_channel.pusher_channel.trigger('client-new-color', message.to_dict())
+
+    def send_text(self, moodies_channel, message):
+        """
+        Send a pusher client-text-message even in pusher channel
+        """
+        moodies_channel.pusher_channel.trigger('client-text-message', message.to_dict())
 
 class MoodiesUser:
 
@@ -167,7 +194,12 @@ class MoodiesChannel:
         self.users = []
 
     def recompute_mood(self):
+        """
+        Recompute the current channel top mood
+        Return True if the current mood changed
+        """
         moods = self.moods_container.moods
+        old_mood = self.current_mood
         for mood_name, mood in moods.iteritems():
             mood.value = 0
             if not len(self.users):
@@ -176,6 +208,7 @@ class MoodiesChannel:
                 mood.value += user.moods_container.moods[mood_name].value
             mood.value = mood.value / len(self.users)
         self.current_mood = self.moods_container.compute_top_mood()
+        return old_mood.name is not self.current_mood.name
 
 
 class Mood:
@@ -233,11 +266,21 @@ class Message:
     Parse a the json string received in pusher message data
     """
 
-    def __init__(self, msg):
+    def __init__(self, user_id=None, value=None):
+        self.value = value
+        self.user_id = user_id
+
+    def feed_with_json(self, msg):
         assert type(msg) in types.StringTypes, 'Message instance did not receive a String'
         msg = json.loads(msg)
         self.value = self._get_json_val('value', msg)
         self.user_id = self._get_json_val('user_id', msg)
+
+    def to_dict(self):
+        return {
+                'value': self.value
+                , 'user_id': self.user_id
+        }
 
     def _get_json_val(self, key, json_msg):
         if key in json_msg:
