@@ -43,12 +43,17 @@ class MoodiesServer:
         self._connect_to_pusher()
         while not self.killed:
             time.sleep(SLEEPTIME)
+            tic = time.time()
             for user_name, user in self.users.iteritems():
                 user.moods_container.decrease_all_moods(MOOD_DECREASE_RATE)
                 user.compute_top_mood()
             for channel_name, channel in self.channels.iteritems():
                 if channel.recompute_mood():
                     self.send_color(channel, Message(self.user_id, channel.current_mood.color))
+            # The above computations are O(n^m) but moods are limited (almost constant),
+            # only users can grow without control. Yet, if this becomes too slow we'd need to rethink the
+            # algorithm, but this should be enough for an MVP
+            self.logger.debug('Update cycle time: {}'.format(time.time() - tic))
 
     def _connect_to_pusher(self):
         """
