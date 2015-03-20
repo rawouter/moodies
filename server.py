@@ -295,19 +295,36 @@ class Message:
             return None
 
 
-def start_logger():
+def start_logger(args):
     module_logger = logging.getLogger()
-    module_logger.setLevel(logging.DEBUG)
     #formatter = logging.Formatter('%(asctime)s - %(name)s.%(lineno)d - %(levelname)s - %(message)s')
     formatter = logging.Formatter('%(levelname)s - %(name)s.%(lineno)d - %(message)s')
     ch = logging.StreamHandler(sys.stdout)
+
     ch.setFormatter(formatter)
     module_logger.addHandler(ch)
 
+    if args.debug:
+        module_logger.setLevel(logging.DEBUG)
+    else:
+        module_logger.setLevel(logging.INFO)
+
+
+def parse_args():
+    import argparse
+    parser = argparse.ArgumentParser(
+        description='Moodies server listening to Pusher message and acting on them'
+    )
+    parser.add_argument("-d", "--debug", help="Setup debug login", action="store_true")
+
+    args = parser.parse_args()
+    return args
+
 def main():
-    start_logger()
     server = MoodiesServer()
     server.run_forever()
 
 if __name__=='__main__':
+    args = parse_args()
+    start_logger(args)
     main()
