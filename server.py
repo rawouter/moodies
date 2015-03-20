@@ -134,34 +134,23 @@ class MoodiesServer:
         # Hardocding values for now, MVP. We could have a config file/DB later for that.
         # Arduino excited
         if message.value == int('0b10', 2):
-            self._is_excited(message.user_id, channel_name)
+            self._act_on_mood('excited', message.user_id, channel_name)
         # Arduino nervous
         elif message.value == int('0b100000', 2):
-            self._is_nervous(message.user_id, channel_name)
+            self._act_on_mood('nervous', message.user_id, channel_name)
 
-    def _is_excited(self, user_id, channel_name):
+    def _act_on_mood(self, mood_name, user_id, channel_name):
         message = Message(self.user_id)
         channel = self.channels[channel_name]
 
-        self.users[user_id].moods_container.increase('excited')
+        self.users[user_id].moods_container.increase(mood_name)
         if channel.recompute_mood():
             message.value = channel.current_mood.color
             self.send_color(channel, message)
-
-        message.value = '{} is excited'.format(user_id)
+        message.value = '{} is {}'.format(user_id, mood_name)
         self.send_text(channel, message)
-
-    def _is_nervous(self, user_id, channel_name):
-        message = Message(self.user_id)
-        channel = self.channels[channel_name]
-
-        self.users[user_id].moods_container.increase('nervous')
-        if channel.recompute_mood():
-            message.value = channel.current_mood.color
-            self.send_color(channel, message)
-
-        message.value = '{} is nervous'.format(user_id)
-        self.send_text(channel, message)
+        message.value = channel.current_mood.melody
+        self.send_melody(channel, message)
 
 
     def send_color(self, moodies_channel, message):
@@ -177,6 +166,13 @@ class MoodiesServer:
         """
         self.logger.debug('Sending new text in {} - {}'.format(moodies_channel.name, message.value))
         moodies_channel.pusher_channel.trigger('client-text-message', message.to_dict())
+
+    def send_melody(self, moodies_channel, message):
+        """
+        Send a pusher client-play-melody even in pusher channel
+        """
+        self.logger.debug('Sending new melody in {} - {}'.format(moodies_channel.name, message.value))
+        moodies_channel.pusher_channel.trigger('client-play-melody', message.to_dict())
 
 class MoodiesUser:
 
@@ -231,10 +227,11 @@ class Mood:
     Contains a mood parameters
     """
 
-    def __init__(self, name, value, color):
+    def __init__(self, name, value, color, melody=''):
         self.name = name
         self.value = value
         self.color = color
+        self.melody = melody
 
 class MoodsContainer:
 
@@ -245,8 +242,8 @@ class MoodsContainer:
     def __init__(self):
         self.moods = {
             'default': Mood('noMood', 0, '000000'),
-            'excited': Mood('excited', 0, '00FF00'),
-            'nervous': Mood('nervous', 0, 'FF0000')
+            'excited': Mood('excited', 0, '00FF00', '1c2g2p1c3g'),
+            'nervous': Mood('nervous', 0, 'FF0000', '3e3d5c')
         }
 
     def decrease_all_moods(self, val):

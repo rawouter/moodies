@@ -27,6 +27,7 @@ def connect_handler(data):
     channel = pusher.subscribe('presence-moodies')
     channel.bind('client-new-color', callback_color)
     channel.bind('client-text-message', callback_text)
+    channel.bind('client-play-melody', callback_melody)
     time.sleep(1)
     channel.trigger('client-button-pushed', {'value': 2, 'user_id': user_data['user_id']})
     logging.info('send button_pushed')
@@ -36,6 +37,9 @@ def callback_color(msg):
 
 def callback_text(msg):
     logger.info('%% Received text message: {}'.format(msg))
+
+def callback_melody(msg):
+    logger.info('%% Received melody: {}'.format(msg))
 
 pusher = pusherclient.Pusher(app_key, secret=secret, user_data=user_data)
 pusher.connection.bind('pusher:connection_established', connect_handler)
