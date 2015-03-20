@@ -7,6 +7,7 @@ import types
 
 import pusherclient
 
+
 # Configuration
 APPKEY = '2c987384b72778026687'
 SECRET = '8440acd6ba1e0bfec3d4'
