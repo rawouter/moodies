@@ -30,6 +30,7 @@ class MoodiesServer:
 
     def __init__(self):
         self.logger = logging.getLogger('moodies.Server')
+        self.logger.info('Starting Moodies server')
         self.killed = False
         self.pusher = pusherclient.Pusher(APPKEY, secret=SECRET, user_data=USERDATA)
         self.channels = {}
@@ -42,6 +43,7 @@ class MoodiesServer:
         alive until killed
         """
         self._connect_to_pusher()
+        self.logger.info('Entering server loop')
         while not self.killed:
             time.sleep(SLEEPTIME)
             tic = time.time()
@@ -54,7 +56,7 @@ class MoodiesServer:
             # The above computations are O(n^m) but moods are limited (almost constant),
             # only users can grow without control. Yet, if this becomes too slow we'd need to rethink the
             # algorithm, but this should be enough for an MVP
-            self.logger.debug('Update cycle time: {}'.format(time.time() - tic))
+            self.logger.debug('Update cycle duration: {}'.format(time.time() - tic))
 
     def _connect_to_pusher(self):
         """
@@ -63,6 +65,7 @@ class MoodiesServer:
         """
         self.pusher.connection.bind('pusher:connection_established', self._callback_connection_estabished)
         self.pusher.connect()
+        self.logger.info('Pusher connection established')
 
 
     def _callback_connection_estabished(self, data):
@@ -70,6 +73,7 @@ class MoodiesServer:
         Callback to subribe to channels when receiving pusher:connection_established,
         needed as we can't subscribe until we are connected.
         """
+        self.logger.debug('Callback pusher:connection_established - {}'.format(data))
         pusher_channel_config = self.pusher.subscribe('moodies-client-config')
         self.channels['moodies-client-config'] = MoodiesChannel(pusher_channel_config)
         self._setup_config_channel_callbacks(pusher_channel_config)
@@ -102,6 +106,7 @@ class MoodiesServer:
         Create a new MoodiesUser and store it for the first time we see the user.
         Append the user to the channel list of users.
         """
+        self.logger.debug('Callback pusher_internal:member_added - {} - {}'.format(channel_name, msg))
         message = Message()
         message.feed_with_json(msg)
         self.logger.info('{} entering {}'.format(message.user_id, channel_name))
@@ -114,12 +119,14 @@ class MoodiesServer:
         """
         Remove users from channel users list.
         """
+        self.logger.debug('Callback pusher_internal:member_removed - {} - {}'.format(channel_name, msg))
         message = Message()
         message.feed_with_json(msg)
         self.logger.info('{} left {}'.format(message.user_id, channel_name))
         self.channels[channel_name].users.remove(self.users[message.user_id])
 
     def _callback_button_pushed(self, msg, channel_name):
+        self.logger.debug('Callback client-button-pushed - {} - {}'.format(channel_name, msg))
         message = Message()
         message.feed_with_json(msg)
         self.logger.info('{} pushed the button'.format(message.user_id))
@@ -161,12 +168,14 @@ class MoodiesServer:
         """
         Send a pusher client-new-color even in pusher channel
         """
+        self.logger.debug('Sending new color in {} - {}'.format(moodies_channel.name, message.value))
         moodies_channel.pusher_channel.trigger('client-new-color', message.to_dict())
 
     def send_text(self, moodies_channel, message):
         """
         Send a pusher client-text-message even in pusher channel
         """
+        self.logger.debug('Sending new text in {} - {}'.format(moodies_channel.name, message.value))
         moodies_channel.pusher_channel.trigger('client-text-message', message.to_dict())
 
 class MoodiesUser:
@@ -296,18 +305,18 @@ class Message:
 
 
 def start_logger(args):
-    module_logger = logging.getLogger()
+    module_logger = logging.getLogger('moodies')
     #formatter = logging.Formatter('%(asctime)s - %(name)s.%(lineno)d - %(levelname)s - %(message)s')
-    formatter = logging.Formatter('%(levelname)s - %(name)s.%(lineno)d - %(message)s')
+    formatter = logging.Formatter('[%(levelname)8s] %(name)s.%(lineno)d --- %(message)s')
     ch = logging.StreamHandler(sys.stdout)
 
     ch.setFormatter(formatter)
     module_logger.addHandler(ch)
 
-    if args.debug:
-        module_logger.setLevel(logging.DEBUG)
-    else:
-        module_logger.setLevel(logging.INFO)
+    module_logger.setLevel(args.loglevel)
+
+    # Disable all other logging spurious messages "No handler for"
+    logging.getLogger().addHandler(logging.NullHandler())
 
 
 def parse_args():
@@ -315,7 +324,19 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description='Moodies server listening to Pusher message and acting on them'
     )
-    parser.add_argument("-d", "--debug", help="Setup debug login", action="store_true")
+    parser.add_argument('-d', '--debug',
+        help='Setup debug loging',
+        action='store_const',
+        dest='loglevel',
+        const=logging.DEBUG,
+        default=logging.WARNING
+    )
+    parser.add_argument('-v','--verbose',
+        help='Setup verbose loging (less than debug)',
+        action='store_const',
+        dest='loglevel',
+        const=logging.INFO
+   )
 
     args = parser.parse_args()
     return args
