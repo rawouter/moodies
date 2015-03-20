@@ -336,8 +336,7 @@ def parse_args():
         action='store_const',
         dest='loglevel',
         const=logging.INFO
-   )
-
+    )
     args = parser.parse_args()
     return args
 
