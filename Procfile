@@ -1,1 +1,1 @@
-server: python server.py -v
+server: python server.py -d

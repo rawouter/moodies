@@ -152,7 +152,6 @@ class MoodiesServer:
         message.value = channel.current_mood.melody
         self.send_melody(channel, message)
 
-
     def send_color(self, moodies_channel, message):
         """
         Send a pusher client-new-color even in pusher channel
