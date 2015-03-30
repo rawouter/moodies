@@ -133,11 +133,11 @@ class MoodiesServer:
         self.logger.debug(message.value)
         # Hardocding values for now, MVP. We could have a config file/DB later for that.
         # Arduino excited
-        if message.value == int('0b10', 2):
+        if message.value == str(int('0b10', 2)):
             self.logger.info('{} is excited'.format(message.user_id))
             self._act_on_mood('excited', message.user_id, channel_name)
         # Arduino nervous
-        elif message.value == int('0b100000', 2):
+        elif message.value == str(int('0b100000', 2)):
             self.logger.info('{} is nervous'.format(message.user_id))
             self._act_on_mood('nervous', message.user_id, channel_name)
 
