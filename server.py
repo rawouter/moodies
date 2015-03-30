@@ -56,7 +56,7 @@ class MoodiesServer:
             # The above computations are O(n^m) but moods are limited (almost constant),
             # only users can grow without control. Yet, if this becomes too slow we'd need to rethink the
             # algorithm, but this should be enough for an MVP
-            self.logger.debug('Update cycle duration: {}'.format(time.time() - tic))
+            #self.logger.debug('Update cycle duration: {}'.format(time.time() - tic))
 
     def _connect_to_pusher(self):
         """
