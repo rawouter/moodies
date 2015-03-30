@@ -146,11 +146,12 @@ class MoodiesServer:
         channel = self.channels[channel_name]
 
         self.users[user_id].moods_container.increase(mood_name)
-        message.value = '{} is {}'.format(user_id, mood_name)
-        self.send_text(channel, message)
+        updated = channel.recompute_mood()
         message.value = channel.current_mood.melody
         self.send_melody(channel, message)
-        if channel.recompute_mood():
+        message.value = '{} is {}'.format(user_id, mood_name)
+        self.send_text(channel, message)
+        if updated:
             message.value = channel.current_mood.color
             self.send_color(channel, message)
 
