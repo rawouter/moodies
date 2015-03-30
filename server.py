@@ -142,39 +142,27 @@ class MoodiesServer:
             self._act_on_mood('nervous', message.user_id, channel_name)
 
     def _act_on_mood(self, mood_name, user_id, channel_name):
-        message = Message(self.user_id)
         channel = self.channels[channel_name]
 
         self.users[user_id].moods_container.increase(mood_name)
-        updated = channel.recompute_mood()
-        message.value = channel.current_mood.melody
-        self.send_melody(channel, message)
-        message.value = '{} is {}'.format(user_id, mood_name)
-        self.send_text(channel, message)
-        if updated:
-            message.value = channel.current_mood.color
-            self.send_color(channel, message)
+        if channel.recompute_mood():
+            self.send_pusher_msg(channel, 'client-new-color',
+                Message(self.user_id, channel.current_mood.color)
+            )
+        self.send_pusher_msg(channel, 'client-play-melody',
+            Message(self.user_id, channel.current_mood.melody)
+        )
+        self.send_pusher_msg(channel, 'client-text-message',
+            Message(self.user_id, '{} is {}'.format(user_id, mood_name))
+        )
 
-    def send_color(self, moodies_channel, message):
+    def send_pusher_msg(self, moodies_channel, event, message):
         """
-        Send a pusher client-new-color even in pusher channel
+        Send a pusher event in pusher channel
         """
-        self.logger.debug('Sending new color in {} - {}'.format(moodies_channel.name, message.value))
-        moodies_channel.pusher_channel.trigger('client-new-color', message.to_dict())
-
-    def send_text(self, moodies_channel, message):
-        """
-        Send a pusher client-text-message even in pusher channel
-        """
-        self.logger.debug('Sending new text in {} - {}'.format(moodies_channel.name, message.value))
-        moodies_channel.pusher_channel.trigger('client-text-message', message.to_dict())
-
-    def send_melody(self, moodies_channel, message):
-        """
-        Send a pusher client-play-melody even in pusher channel
-        """
-        self.logger.debug('Sending new melody in {} - {}'.format(moodies_channel.name, message.value))
-        moodies_channel.pusher_channel.trigger('client-play-melody', message.to_dict())
+        self.logger.debug('Sending new {} in {} - {}'.format(event, moodies_channel.name, message.value))
+        moodies_channel.pusher_channel.trigger(event, message.to_dict())
+        time.sleep(0.05) # Let pusher digest our message, pusher buffer messages without it...
 
 class MoodiesUser:
 
