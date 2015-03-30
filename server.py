@@ -46,7 +46,7 @@ class MoodiesServer:
         self.logger.info('Entering server loop')
         while not self.killed:
             time.sleep(SLEEPTIME)
-            tic = time.time()
+            #tic = time.time()
             for user_name, user in self.users.iteritems():
                 user.moods_container.decrease_all_moods(MOOD_DECREASE_RATE)
                 user.compute_top_mood()
@@ -242,9 +242,9 @@ class MoodsContainer:
 
     def __init__(self):
         self.moods = {
-            'default': Mood('noMood', 0, '000000'),
-            'excited': Mood('excited', 0, '00FF00', '1c2g2p1c3g'),
-            'nervous': Mood('nervous', 0, 'FF0000', '3e3d5c')
+            'default': Mood('noMood', 0, '0,0,0'),
+            'excited': Mood('excited', 0, '0,255,0', '1c2g2p1c3g'),
+            'nervous': Mood('nervous', 0, '255,0,0', '3e3d5c')
         }
 
     def decrease_all_moods(self, val):
