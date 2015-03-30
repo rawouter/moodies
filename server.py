@@ -18,8 +18,8 @@ USERDATA = {
       'name': 'Moodies Server'
     }
 }
-SLEEPTIME = 2
-MOOD_DECREASE_RATE = 5
+SLEEPTIME = 30
+MOOD_DECREASE_RATE = 1
 
 
 class MoodiesServer:
