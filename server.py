@@ -146,13 +146,13 @@ class MoodiesServer:
         channel = self.channels[channel_name]
 
         self.users[user_id].moods_container.increase(mood_name)
-        if channel.recompute_mood():
-            message.value = channel.current_mood.color
-            self.send_color(channel, message)
         message.value = '{} is {}'.format(user_id, mood_name)
         self.send_text(channel, message)
         message.value = channel.current_mood.melody
         self.send_melody(channel, message)
+        if channel.recompute_mood():
+            message.value = channel.current_mood.color
+            self.send_color(channel, message)
 
     def send_color(self, moodies_channel, message):
         """
