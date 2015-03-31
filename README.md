@@ -1,4 +1,3 @@
-# moodies
+# Moodies
 
-This is the new repo on gitHub for the moodies code.
-Heroku ready to connect to pusher
+This is the code for the moodies server. It listen to the pushed channel events and replies based on what's configured.
