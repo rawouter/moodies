@@ -52,7 +52,10 @@ class MoodiesServer:
                 user.compute_top_mood()
             for channel_name, channel in self.channels.iteritems():
                 if channel.recompute_mood():
-                    self.send_color(channel, Message(self.user_id, channel.current_mood.color))
+                    self.send_pusher_msg(channel, 'client-new-color',
+                        Message(self.user_id, channel.current_mood.color)
+                    )
+
             # The above computations are O(n^m) but moods are limited (almost constant),
             # only users can grow without control. Yet, if this becomes too slow we'd need to rethink the
             # algorithm, but this should be enough for an MVP
@@ -144,17 +147,20 @@ class MoodiesServer:
     def _act_on_mood(self, mood_name, user_id, channel_name):
         channel = self.channels[channel_name]
 
-        self.users[user_id].moods_container.increase(mood_name)
-        if channel.recompute_mood():
-            self.send_pusher_msg(channel, 'client-new-color',
-                Message(self.user_id, channel.current_mood.color)
+        if user_id not in self.users:
+            self.logger.error('{} is not a know user!'.format(user_id))
+        else:
+            self.users[user_id].moods_container.increase(mood_name)
+            if channel.recompute_mood():
+                self.send_pusher_msg(channel, 'client-new-color',
+                    Message(self.user_id, channel.current_mood.color)
+                )
+            self.send_pusher_msg(channel, 'client-play-melody',
+                Message(self.user_id, channel.current_mood.melody)
             )
-        self.send_pusher_msg(channel, 'client-play-melody',
-            Message(self.user_id, channel.current_mood.melody)
-        )
-        self.send_pusher_msg(channel, 'client-text-message',
-            Message(self.user_id, '{} is {}'.format(user_id, mood_name))
-        )
+            self.send_pusher_msg(channel, 'client-text-message',
+                Message(self.user_id, '{} is {}'.format(user_id, mood_name))
+            )
 
     def send_pusher_msg(self, moodies_channel, event, message):
         """
