@@ -84,7 +84,7 @@ def send_button_pushed(pusher_client, pusher_channel_name):
     """
     pusher_client.channels[pusher_channel_name].trigger(
         'client-button-pushed',
-        {'value': 2, 'user_id': user_data['user_id']}
+        {'value': '2', 'user_id': user_data['user_id']}
     )
     logging.info('send button_pushed')
 
