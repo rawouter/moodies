@@ -5,8 +5,9 @@ import time
 
 import pusherclient
 
-from moodobjects import MoodiesChannel, MoodsContainer
 from moodiesmessage import Message
+from moodobjects import MoodiesChannel, MoodsContainer
+import pusherevents
 
 
 
@@ -54,7 +55,7 @@ class MoodiesServer:
                 user.compute_top_mood()
             for channel_name, channel in self.channels.iteritems():
                 if channel.recompute_mood():
-                    self.send_pusher_msg(channel, 'client-new-color',
+                    self.send_pusher_msg(channel, pusherevents.CHANGE_COLOR,
                         Message(self.user_id, channel.current_mood.color)
                     )
 
@@ -158,13 +159,13 @@ class MoodiesServer:
            )
         self.users[user_id].moods_container.increase(mood_name)
         if channel.recompute_mood():
-            self.send_pusher_msg(channel, 'client-new-color',
+            self.send_pusher_msg(channel, pusherevents.CHANGE_COLOR,
                 Message(self.user_id, channel.current_mood.color)
             )
-        self.send_pusher_msg(channel, 'client-play-melody',
+        self.send_pusher_msg(channel, pusherevents.PLAY_MELODY,
             Message(self.user_id, channel.current_mood.melody)
         )
-        self.send_pusher_msg(channel, 'client-text-message',
+        self.send_pusher_msg(channel, pusherevents.DISPLAY_TEXT,
             Message(self.user_id, '{} is {}'.format(user_id, mood_name))
         )
 
