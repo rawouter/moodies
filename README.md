@@ -2,23 +2,11 @@
 
 This is the code for the moodies server. It listen to the pushed channel events and replies based on what's configured.
 
-## Pusher messages (see moodiesevents.py)
-
-### Pusher channel
+## Pusher channel
 
 We'll use the pusher channel 'presence-moodies' for this POC.
 
-### Pusher data structure
-
-The pushed events will come with data which are the following JSON object (might be extended in the future):
-
-  {
-    'value': <value>
-    , 'user_id': <user_id>
-  }
-
-Value is described below, depending event.
-User ID is the id of the user as authenticated in the system.
+## Pusher messages (see moodiesevents.py)
 
 ### Pusher events this server can send:
 
@@ -59,3 +47,15 @@ User ID is the id of the user as authenticated in the system.
    4 = b100 = two short push
    5 = b101 = one short push followed by one long push
    ```
+
+### Pusher data structure
+
+The pushed events will come with data which are the following JSON object (might be extended in the future):
+
+  {
+    'value': <value>
+    , 'user_id': <user_id>
+  }
+
+Value is described below, depending event.
+User ID is the id of the user as authenticated in the system.
