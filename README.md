@@ -2,7 +2,7 @@
 
 This is the code for the moodies server. It listen to the pushed channel events and replies based on what's configured.
 
-## Pusher messages
+## Pusher messages (see moodiesevents.py)
 
 ### Pusher channel
 
@@ -20,7 +20,7 @@ The pushed events will come with data which are the following JSON object (might
 Value is described below, depending event.
 User ID is the id of the user as authenticated in the system.
 
-### Pusher events
+### Pusher events this server can send:
 
 1. client-new-color
 
@@ -36,7 +36,9 @@ User ID is the id of the user as authenticated in the system.
 
    Melody to play, documentation to come (it's in the arduino code)
 
-4. client-button-pushed
+### Pusher events this server will listen and reply to:
+
+1. client-button-pushed
 
    Message sent from clients. Value is a string.
    From arduino, the content of the string it actually an integer representing the number of time the button was pushed, from    binary we start with:
