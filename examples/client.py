@@ -10,6 +10,10 @@ It's essentially a listener that will print known events to stdout.
 
 It has a function to send a button pushed event (send_button_pushed) but we don't
 use it to not garbage the presence-moodies channel at every run
+Can be triggered like this:
+    >>> import moodiesclient
+    >>> pusher_client = moodiesclient.connect_to_pusher()
+    >>> moodiesclient.send_button_pushed(pusher_client, 'presence-moodies')
 """
 
 # These credentials will move in the future, 'presence-moodies' is is just a test channel
@@ -23,6 +27,7 @@ user_data = {
 }
 
 logger = logging.getLogger('client-example') # configure global logger to see pusherclient debugs
+logging.getLogger().addHandler(logging.NullHandler())
 
 def connect_to_pusher():
     """
@@ -36,6 +41,7 @@ def connect_to_pusher():
         partial(callback_connection_made, pusher_client=pusher_client)
     )
     pusher_client.connect()
+    return pusher_client
 
 def callback_connection_made(data, pusher_client):
     """
@@ -72,11 +78,14 @@ def callback_text(msg):
 def callback_melody(msg):
     logger.info('%% Received melody: {}'.format(msg))
 
-def send_button_pushed(pusher_channel):
+def send_button_pushed(pusher_client, pusher_channel_name):
     """
     Send a button pushed event
     """
-    pusher_channel.trigger('client-button-pushed', {'value': 2, 'user_id': user_data['user_id']})
+    pusher_client.channels[pusher_channel_name].trigger(
+        'client-button-pushed',
+        {'value': 2, 'user_id': user_data['user_id']}
+    )
     logging.info('send button_pushed')
 
 def configure_logger(args):
@@ -105,10 +114,10 @@ def sleep_forever():
     while True:
         # You can do useful things here
         # The whole pusher connection is managed by callbacks
-        time.sleep(1)
+        time.sleep(60)
 
 if __name__=='__main__':
     args = parse_args()
     configure_logger(args)
-    connect_to_pusher()
+    pusher_client = connect_to_pusher()
     sleep_forever()
