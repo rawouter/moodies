@@ -1,5 +1,5 @@
-import logging
 from functools import partial
+import logging
 import pusherclient
 import sys
 import time
