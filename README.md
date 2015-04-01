@@ -1,14 +1,33 @@
 # Moodies
 
-This is the code for the moodies server. It listen to the pushed channel events and replies based on what's configured.
+This git repo contains the python moodies libraries as well as the server script (listening to events and answering them) and a client script example that can be used on the CLI to sniff or trigger moodies events.
 
-## Pusher channel
+## MoodiesClient
 
-We'll use the pusher channel 'presence-moodies' for this POC.
+Moodies library current work on top with pusherclient library, which in turn exchange the message using Pusher. Pusher has been factored out to moodies/client.py so that we can evolve to a different messaging system in the future if needed.
+MoodiesClient is a wrapper to pusher that will handle all the connection, callbacks and message trigerring to pusher.
 
-## Pusher messages (see moodiesevents.py)
+## ModdiesChannel
 
-### Pusher events this server can send:
+A moodies channel is a chat room containing moods (modds are Mood object contained in a MoodiesContainer).
+The channel mood is an average of the users that joined that channel.
+
+## MoodiesUser
+
+A moodies user, it currently only holds the MoodiesContainer for that user.
+
+## MoodiesEvents
+
+Moodies event are event named event that client can send/receive. The moodies client will send and forward moodies events with their data being a Message object (moodies/message.py)
+Below  is a list of events that can occur, and what value can be set in the Message.
+
+For example, to send a message the event will be `events.MESSAGE` and the data will be `Message(user_id='user_id', value='My message')`
+
+```
+moodies_client.send_event(events.MESSAGE, Message(user_id='user_id', value='My message'))
+```
+
+### Pusher events normally sent by the server:
 
 1. client-new-color
 
@@ -24,7 +43,7 @@ We'll use the pusher channel 'presence-moodies' for this POC.
 
    Melody to play, documentation to come (it's in the arduino code)
 
-### Pusher events this server will listen and reply to:
+### Pusher events the server will listen and reply to:
 
 1. client-button-pushed
 
@@ -47,15 +66,3 @@ We'll use the pusher channel 'presence-moodies' for this POC.
    4 = b100 = two short push
    5 = b101 = one short push followed by one long push
    ```
-
-### Pusher data structure
-
-The pushed events will come with data which are the following JSON object (might be extended in the future):
-
-  {
-    'value': <value>
-    , 'user_id': <user_id>
-  }
-
-Value is described below, depending event.
-User ID is the id of the user as authenticated in the system.
