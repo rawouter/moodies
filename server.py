@@ -5,11 +5,10 @@ import time
 
 import pusherclient
 
-from moodiesmessage import Message
-from moodobjects import MoodiesChannel, MoodsContainer
-import moodiesevents
-
-
+from moodies import events
+from moodies.message import Message
+from moodies.channel import MoodiesChannel
+from moodies.user import MoodiesUser
 
 # Configuration
 APPKEY = '2c987384b72778026687'
@@ -55,7 +54,7 @@ class MoodiesServer:
                 user.compute_top_mood()
             for channel_name, channel in self.channels.iteritems():
                 if channel.recompute_mood():
-                    self.send_pusher_msg(channel, moodiesevents.CHANGE_COLOR,
+                    self.send_pusher_msg(channel, events.CHANGE_COLOR,
                         Message(self.user_id, channel.current_mood.color)
                     )
 
@@ -159,13 +158,13 @@ class MoodiesServer:
            )
         self.users[user_id].moods_container.increase(mood_name)
         if channel.recompute_mood():
-            self.send_pusher_msg(channel, moodiesevents.CHANGE_COLOR,
+            self.send_pusher_msg(channel, events.CHANGE_COLOR,
                 Message(self.user_id, channel.current_mood.color)
             )
-        self.send_pusher_msg(channel, moodiesevents.PLAY_MELODY,
+        self.send_pusher_msg(channel, events.PLAY_MELODY,
             Message(self.user_id, channel.current_mood.melody)
         )
-        self.send_pusher_msg(channel, moodiesevents.DISPLAY_TEXT,
+        self.send_pusher_msg(channel, events.DISPLAY_TEXT,
             Message(self.user_id, '{} is {}'.format(user_id, mood_name))
         )
 
@@ -176,21 +175,6 @@ class MoodiesServer:
         self.logger.debug('Sending new {} in {} - {}'.format(event, moodies_channel.name, message.value))
         moodies_channel.pusher_channel.trigger(event, message.to_dict())
         time.sleep(0.05) # Let pusher digest our message, pusher buffer messages without it...
-
-class MoodiesUser:
-
-    """
-    User class, store Mood per users
-    """
-
-    def __init__(self, user_id):
-        self.user_id = user_id
-        self.moods_container = MoodsContainer()
-        self.top_mood = self.moods_container.moods['default']
-
-    def compute_top_mood(self):
-        self.top_mood = self.moods_container.compute_top_mood()
-        return self.top_mood
 
 
 def start_logger(args):

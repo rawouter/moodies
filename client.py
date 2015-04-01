@@ -137,9 +137,10 @@ if __name__=='__main__':
         sleep_forever()
     else:
         def send_button_pushed(data):
-            import sys
+            import os, signal
             send_event(pusher_client, CHANNEL_NAME, args.event, args.value, args.user_id)
-            sys.exit(0)
+            time.sleep(1)
+            os.kill(os.getpid(), signal.SIGINT)
 
         pusher_client.connection.bind(
             'pusher:connection_established',
