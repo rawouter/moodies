@@ -7,6 +7,6 @@ https://pusher.com/docs/client_api_guide/client_events
 # Events received by this server
 BUTTON_PUSHED = 'client-button-pushed'
 # Events sent by this server
-SEND_COLOR = 'client-new-color'
-SEND_TEXT = 'client-text-message'
-SEND_MELODY = 'client-play-melody'
+COLOR = 'client-new-color'
+TEXT = 'client-text-message'
+MELODY = 'client-play-melody'
