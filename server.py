@@ -41,7 +41,7 @@ class MoodiesServer:
                 user.compute_top_mood()
             for channel_name, channel in self.channels.iteritems():
                 if channel.recompute_mood():
-                    self.send_pusher_msg(channel, events.CHANGE_COLOR,
+                    self.send_pusher_msg(channel, events.COLOR,
                         Message(self.user_id, channel.current_mood.color)
                     )
 
@@ -145,13 +145,13 @@ class MoodiesServer:
            )
         self.users[user_id].moods_container.increase(mood_name)
         if channel.recompute_mood():
-            self.send_pusher_msg(channel, events.CHANGE_COLOR,
+            self.send_pusher_msg(channel, events.COLOR,
                 Message(self.user_id, channel.current_mood.color)
             )
-        self.send_pusher_msg(channel, events.PLAY_MELODY,
+        self.send_pusher_msg(channel, events.MELODY,
             Message(self.user_id, channel.current_mood.melody)
         )
-        self.send_pusher_msg(channel, events.DISPLAY_TEXT,
+        self.send_pusher_msg(channel, events.TEXT,
             Message(self.user_id, '{} is {}'.format(user_id, mood_name))
         )
 
