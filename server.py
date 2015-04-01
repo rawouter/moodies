@@ -27,7 +27,7 @@ class MoodiesServer:
 
     def run_forever(self):
         """
-        Establish the connection to Pusher and keep the MoodiesServer class
+        Establish the connection to moodies comm layer and keep the MoodiesServer class
         alive until killed
         """
         self._connect_to_moodies()
@@ -141,7 +141,7 @@ def start_logger(args):
 def parse_args():
     import argparse
     parser = argparse.ArgumentParser(
-        description='Moodies server listening to Pusher message and acting on them'
+        description='Moodies server listening to moodies client messages and acting on them'
     )
     parser.add_argument('-d', '--debug',
         help='Setup debug loging',
