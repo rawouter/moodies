@@ -2,6 +2,7 @@ from functools import partial
 import logging
 import pusherclient
 import sys
+import time
 
 """
 Client functionalities to have moodies appliance connect to a specific pusher channel
