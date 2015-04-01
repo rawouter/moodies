@@ -6,9 +6,8 @@ class MoodiesChannel:
     Channel class holding a chat room (pusher channel) and it's moods (MoodsContainer class)
     """
 
-    def __init__(self, pusher_channel):
-        self.pusher_channel = pusher_channel
-        self.name = pusher_channel.name
+    def __init__(self, channel_name):
+        self.name = channel_name
         self.moods_container = MoodsContainer()
         self.current_mood = self.moods_container.moods['default']
         self.users = []

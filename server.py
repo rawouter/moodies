@@ -66,21 +66,13 @@ class MoodiesServer:
         needed as we can't subscribe until we are connected.
         """
         self.logger.debug('Callback pusher:connection_established - {}'.format(data))
-        pusher_channel_config = self.pusher.subscribe('moodies-client-config')
-        self.channels['moodies-client-config'] = MoodiesChannel(pusher_channel_config)
-        self._setup_config_channel_callbacks(pusher_channel_config)
 
         for c in config.connected_channels:
-            self.channels[c] = MoodiesChannel(self.pusher.subscribe(c))
+            self.pusher.subscribe(c)
+            self.channels[c] = MoodiesChannel(c)
         for key, moodies_channel in self.channels.iteritems():
             self._setup_mood_channels_callbacks(moodies_channel.pusher_channel)
 
-
-    def _setup_config_channel_callbacks(self, pusher_channel_config):
-        """
-        Configure the config channel callbacks
-        """
-        pass
 
     def _setup_mood_channels_callbacks(self, pusher_channel):
         """
