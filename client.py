@@ -97,13 +97,14 @@ def sleep_forever():
 
 def send_event_and_kill(data, moodies_client, event, message):
     import signal
+    time.sleep(0.05) # Goes too fast otherwise
     moodies_client.send_event(event, message)
     os.kill(os.getpid(), signal.SIGINT)
 
 if __name__=='__main__':
     args = parse_args()
     configure_logger(args)
-    moodies_client = client.MoodiesClient(config.appkey, config.secret, config.connected_channels[0])
+    moodies_client = client.MoodiesClient(config.appkey, config.secret, config.connected_channel)
 
 
     if args.event == 'sniff':
