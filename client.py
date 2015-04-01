@@ -22,7 +22,7 @@ Example enter sniffing mode:
    ./client.py'
 """
 
-logger = logging.getLogger('client') # configure global logger to see pusherclient debugs
+logger = logging.getLogger('client')
 logging.getLogger().addHandler(logging.NullHandler())
 
 def print_callback(data, text):
@@ -53,7 +53,7 @@ def configure_logger(args):
 def parse_args():
     import argparse
     parser = argparse.ArgumentParser(
-            description='Moodies client example using the pusherclient library'
+            description='Moodies client example using the moodies library'
     )
     parser.add_argument('event',
         metavar='EVENT',
