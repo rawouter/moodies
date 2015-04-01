@@ -5,24 +5,11 @@ import time
 
 import pusherclient
 
+import config
 from moodies import events
 from moodies.message import Message
 from moodies.channel import MoodiesChannel
 from moodies.user import MoodiesUser
-
-# Configuration
-APPKEY = '2c987384b72778026687'
-SECRET = '8440acd6ba1e0bfec3d4'
-CONNECTED_CHANNELS = ['presence-moodies']
-USERDATA = {
-  'user_id': 'moodies-server',
-  'user_info': {
-      'name': 'Moodies Server'
-    }
-}
-SLEEPTIME = 30
-MOOD_DECREASE_RATE = 1
-
 
 class MoodiesServer:
 
@@ -34,10 +21,10 @@ class MoodiesServer:
         self.logger = logging.getLogger('moodies.Server')
         self.logger.info('Starting Moodies server')
         self.killed = False
-        self.pusher = pusherclient.Pusher(APPKEY, secret=SECRET, user_data=USERDATA)
+        self.pusher = pusherclient.Pusher(config.appkey, secret=config.secret, user_data=config.server.user)
         self.channels = {}
         self.users = {}
-        self.user_id = USERDATA['user_id']
+        self.user_id = config.server.user['user_id']
 
     def run_forever(self):
         """
@@ -47,10 +34,10 @@ class MoodiesServer:
         self._connect_to_pusher()
         self.logger.info('Entering server loop')
         while not self.killed:
-            time.sleep(SLEEPTIME)
+            time.sleep(config.server.sleeptime)
             #tic = time.time()
             for user_name, user in self.users.iteritems():
-                user.moods_container.decrease_all_moods(MOOD_DECREASE_RATE)
+                user.moods_container.decrease_all_moods(config.server.mood_decrease_rate)
                 user.compute_top_mood()
             for channel_name, channel in self.channels.iteritems():
                 if channel.recompute_mood():
@@ -83,7 +70,7 @@ class MoodiesServer:
         self.channels['moodies-client-config'] = MoodiesChannel(pusher_channel_config)
         self._setup_config_channel_callbacks(pusher_channel_config)
 
-        for c in CONNECTED_CHANNELS:
+        for c in config.connected_channels:
             self.channels[c] = MoodiesChannel(self.pusher.subscribe(c))
         for key, moodies_channel in self.channels.iteritems():
             self._setup_mood_channels_callbacks(moodies_channel.pusher_channel)
