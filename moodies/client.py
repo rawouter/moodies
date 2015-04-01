@@ -77,7 +77,7 @@ class MoodiesClient:
         self.pusher_client.subscribe(self.channel_name)
         logger.debug('Channel {} joined'.format(self.channel_name))
         self.connected = True
-        callback()
+        callback(self)
 
     def _get_pusher_channel(self):
         """
@@ -86,6 +86,22 @@ class MoodiesClient:
         :returns: pusherclient.Channel
         """
         return self.pusher_client.channels[self.channel_name]
+
+    def bind_callback_joining_member(self, func):
+        """
+        Callback for joining member
+
+        :param func: function to call back
+        """
+        self.bind_callback('pusher_internal:member_added', func)
+
+    def bind_callback_leaving_member(self, func):
+        """
+        Callback for leaving member
+
+        :param func: function to call back
+        """
+        self.bind_callback('pusher_internal:member_removed', func)
 
     def bind_callback(self, event, callback):
         """
@@ -102,7 +118,7 @@ class MoodiesClient:
         """
         Send a event in pusher Channel
 
-        :param event: The event as defined in moodies.events
+        :param event: The event (should be as defined in moodies.events)
         :type event: str
         :param message: Message to send
         :type message: moodies.message.Message
@@ -137,10 +153,10 @@ if __name__=='__main__':
             print_callback,
             text=text
         )
-    def callback_connected():
+    def callback_connected(client):
         logger.debug('Configuring all callbacks')
-        client.bind_callback('pusher_internal:member_added', gen_callback('Joining member'))
-        client.bind_callback('pusher_internal:member_removed', gen_callback('Leaving member'))
+        client.bind_callback_joining_member(gen_callback('Joining member'))
+        client.bind_callback_leaving_member(gen_callback('Leaving member'))
         client.bind_callback(events.COLOR, gen_callback('New color'))
         client.bind_callback(events.TEXT, gen_callback('Text message'))
         client.bind_callback(events.MELODY, gen_callback('Play melody'))
