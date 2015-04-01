@@ -132,19 +132,19 @@ class MoodiesClient:
                 event,
                 message.to_dict()
             )
+            time.sleep(0.05) # Let pusher digest our message, pusher buffer messages without it...
             return True
         else:
             return False
 
 if __name__=='__main__':
     import os
-    import time
     sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
     import config
     import events
 
     logger.setLevel(logging.DEBUG)
-    client = MoodiesClient(config.appkey, config.secret, config.connected_channels[0])
+    client = MoodiesClient(config.appkey, config.secret, config.connected_channel)
     client._start_logger()
 
     def print_callback(data, text):
