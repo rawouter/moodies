@@ -3,7 +3,7 @@ from collections import namedtuple
 # Configuration
 appkey = '2c987384b72778026687'
 secret = '8440acd6ba1e0bfec3d4'
-connected_channels = ['presence-moodies']
+connected_channel = 'presence-moodies'
 
 Server = namedtuple('Server', 'user sleeptime mood_decrease_rate')
 server = Server(
