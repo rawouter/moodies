@@ -2,27 +2,27 @@
 
 This git repo contains the python moodies libraries as well as the `server.py` script (listening to events and answering them) and a `client.py` script example that can be used on the CLI to sniff or trigger moodies events.
 
-## MoodiesClient
+## `MoodiesClient`
 
-Moodies library current work on top with pusherclient library, which in turn exchange the message using Pusher. Pusher has been factored out to moodies/client.py so that we can evolve to a different messaging system in the future if needed.
-MoodiesClient is a wrapper to pusher that will handle all the connection, callbacks and message trigerring to pusher.
+Moodies exchange data between the client using a [Pusher](https://pusher.com/) private chat room, with the [pusherclient library](https://github.com/ekulyk/PythonPusherClient/tree/master/pusherclient). Pusher has been factored out to `moodies/client.py` so that we can evolve to a different messaging system in the future if needed.
+`MoodiesClient` is a wrapper to `pusherclient` that will handle all the connection, callbacks and message trigerring to pusher.
 
-## ModdiesChannel
+## `ModdiesChannel`
 
-A moodies channel is a chat room containing moods (modds are Mood object contained in a MoodiesContainer).
-The channel mood is an average of the users that joined that channel.
+A moodies channel is a moodies *"room"* containing online users joining that room and one mood container representing the average of users moods with all possible moods in Moodies (moods are `Mood` object contained in a `MoodiesContainer`).
 
-## MoodiesUser
+## `MoodiesUser`
 
-A moodies user only holds the MoodiesContainer for that user so we keep track of it's mood.
-The moodies server will remember any users even after they left, so we keep track of their mood if come back before it's going to zero, but the moodies channel will only track the online users.
+A moodies user, `MoodiesUser` is simply a container holding the `MoodiesContainer` for that user so we keep track of it's mood. The moodies server will remember any users even after they left, so we keep track of their mood if come back before it's going to zero, but the moodies channel will only track the online users.
 
-## MoodiesEvents
+## Moodies Events
 
-Moodies event are event named event that client can send/receive. The moodies client will send and forward moodies events with their data being a Message object (moodies/message.py)
-Below  is a list of events that can occur, and what value can be set in the Message.
+Moodies events are events that client can send/receive in their `MoodiesChannel` throught the `MoodiesClient`. An event is represented by a it's *name*, a string as in `moodies/events.py`and it's *data*, the `Message` object (moodies/message.py)
+Below  is a list of events that can occur, and what values that can be set in the Message.
 
-For example, to send a message the event will be `events.MESSAGE` and the data will be `Message(user_id='user_id', value='My message')`
+For example, to send the *text message* event the event name will be `events.MESSAGE` and the data can be `Message(user_id='user_id', value='My message')`
+
+Or, using the client to send to the connected room:
 
 ```
 moodies_client.send_event(events.MESSAGE, Message(user_id='user_id', value='My message'))
