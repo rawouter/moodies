@@ -1,6 +1,6 @@
 # Moodies
 
-This git repo contains the python moodies libraries as well as the server script (listening to events and answering them) and a client script example that can be used on the CLI to sniff or trigger moodies events.
+This git repo contains the python moodies libraries as well as the `server.py` script (listening to events and answering them) and a `client.py` script example that can be used on the CLI to sniff or trigger moodies events.
 
 ## MoodiesClient
 
@@ -14,7 +14,8 @@ The channel mood is an average of the users that joined that channel.
 
 ## MoodiesUser
 
-A moodies user, it currently only holds the MoodiesContainer for that user.
+A moodies user only holds the MoodiesContainer for that user so we keep track of it's mood.
+The moodies server will remember any users even after they left, so we keep track of their mood if come back before it's going to zero, but the moodies channel will only track the online users.
 
 ## MoodiesEvents
 
