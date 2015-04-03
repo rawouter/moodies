@@ -1,7 +1,8 @@
 from collections import namedtuple
 
-# Configuration
-appkey = '2c987384b72778026687'
+# These 3 will go in environment variables later, this works with heroku:
+#https://devcenter.heroku.com/articles/config-vars
+appkey = '2c987384b72778026687'   
 secret = '8440acd6ba1e0bfec3d4'
 connected_channel = 'presence-moodies'
 
