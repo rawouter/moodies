@@ -31,5 +31,5 @@ def test_moodies_channel_default(channel, user1, user2):
 def test_moodies_channel_users(channel, user1, user2):
     channel.users.append(user1)
     channel.users.append(user2)
-    assert channel.recompute_mood() == True
+    assert channel.recompute_mood()
     assert channel.current_mood.name == 'excited'
