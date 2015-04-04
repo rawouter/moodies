@@ -11,17 +11,17 @@ class Message:
         self.value = value
         self.user_id = user_id
 
-    def feed_with_json(self, msg):
-        assert type(msg) in types.StringTypes, 'Message instance did not receive a String'
-        msg = json.loads(msg)
-        self.value = self._get_json_val('value', msg)
-        self.user_id = self._get_json_val('user_id', msg)
-
     def to_dict(self):
         return {
                 'value': self.value
                 , 'user_id': self.user_id
         }
+
+    def feed_with_json(self, msg):
+        assert type(msg) in types.StringTypes, 'Message instance did not receive a String'
+        msg = json.loads(msg)
+        self.value = self._get_json_val('value', msg)
+        self.user_id = self._get_json_val('user_id', msg)
 
     def _get_json_val(self, key, json_msg):
         if key in json_msg:
