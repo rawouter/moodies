@@ -4,7 +4,7 @@ from moodies.moods import Mood, MoodsContainer
 
 
 class TestMood(unittest.TestCase):
-    def test_get_element(self):
+    def test_mood_elements(self):
         mood = Mood('testMood', 'testColor')
         self.assertEqual(mood.name, 'testMood')
         self.assertEqual(mood.color, 'testColor')
