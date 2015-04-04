@@ -1,21 +1,27 @@
 from __future__ import absolute_import, unicode_literals
 
+import pytest
 import sys
 sys.path.append('..')
 
 from moodies.moods import Mood, MoodsContainer
 
+@pytest.fixture()
+def mood():
+     return Mood('testMood', 'testColor')
+@pytest.fixture()
+def container():
+     return MoodsContainer()
+
 # Mood tests
-def test_mood_object_defaults():
-    mood = Mood('testMood', 'testColor')
+def test_mood_object_defaults(mood):
     assert mood.name == 'testMood'
     assert mood.color == 'testColor'
     assert isinstance(mood.value, int)
     assert mood.value == 0
     assert hasattr(mood, 'melody')
 
-def test_mood_object_func():
-    mood = Mood('testMood', 'testColor')
+def test_mood_object_func(mood):
     mood.increase(50)
     assert mood.value == 50
     mood.increase(-2)
@@ -30,14 +36,12 @@ def test_mood_object_func():
     assert mood.value == 0
 
 # MoodsContainer tests
-def test_moodscontainer_detauls():
-    container = MoodsContainer()
+def test_moodscontainer_detauls(container):
     assert len(container.moods) > 1
     default_mood = container.moods['default']
     assert default_mood.value == 0
 
-def test_moodscontainer_func():
-    container = MoodsContainer()
+def test_moodscontainer_func(container):
     default_mood = container.moods['default']
     container.decrease_all_moods(10)
     assert default_mood.value == 0
