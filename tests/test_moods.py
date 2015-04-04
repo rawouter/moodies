@@ -1,5 +1,8 @@
+from __future__ import absolute_import, unicode_literals
+import sys
 import unittest
 
+sys.path.append('..')
 from moodies.moods import Mood, MoodsContainer
 
 
