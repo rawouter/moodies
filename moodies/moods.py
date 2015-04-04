@@ -3,7 +3,7 @@ class Mood:
     Container for a specific mood parameters
     """
 
-    def __init__(self, name, color, melody='', value=0 ):
+    def __init__(self, name, color, value=0, melody=''):
         self.name = name
         self.value = value
         self.color = color
