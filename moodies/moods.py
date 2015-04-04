@@ -9,6 +9,21 @@ class Mood:
         self.color = color
         self.melody = melody
 
+    def decrease(self, val):
+        if val < 0: return
+        if self.value > val:
+            self.value -= val
+        else:
+            self.value = 0
+
+    def increase(self, val):
+        if val < 0: return
+        if self.value < (100-val):
+            self.value += val
+        else:
+            self.value = 100
+
+
 
 class MoodsContainer:
 
@@ -28,16 +43,10 @@ class MoodsContainer:
             self.decrease(key, val)
 
     def decrease(self, mood_name, val=20):
-        if self.moods[mood_name].value > val:
-            self.moods[mood_name].value -= val
-        else:
-            self.moods[mood_name].value = 0
+        self.moods[mood_name].decrease(val)
 
     def increase(self, mood_name, val=20):
-        if self.moods[mood_name].value < (100-val):
-            self.moods[mood_name].value += val
-        else:
-            self.moods[mood_name].value = 100
+        self.moods[mood_name].increase(val)
 
     def compute_top_mood(self):
         top_mood = self.moods['default']

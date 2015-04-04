@@ -14,6 +14,20 @@ def test_mood_object_defaults():
     assert mood.value == 0
     assert hasattr(mood, 'melody')
 
+def test_mood_object_func():
+    mood = Mood('testMood', 'testColor')
+    mood.increase(50)
+    assert mood.value == 50
+    mood.increase(-2)
+    assert mood.value == 50
+    mood.increase(77)
+    assert mood.value == 100
+    mood.decrease(77)
+    assert mood.value == 23
+    mood.decrease(-2)
+    assert mood.value == 23
+    mood.decrease(77)
+    assert mood.value == 0
 
 # MoodsContainer tests
 def test_moodscontainer_detauls():
