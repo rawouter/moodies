@@ -18,9 +18,9 @@ class MoodsContainer:
 
     def __init__(self):
         self.moods = {
-            'default': Mood('noMood', '0,0,0'),
-            'excited': Mood('excited', '0,255,0', '1c2g2p1c3g'),
-            'nervous': Mood('nervous', '255,0,0', '3e3d5c')
+            'default': Mood('default', '0,0,0'),
+            'excited': Mood('excited', '0,255,0', melody='1c2g2p1c3g'),
+            'nervous': Mood('nervous', '255,0,0', melody='3e3d5c')
         }
 
     def decrease_all_moods(self, val):

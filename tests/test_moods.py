@@ -1,23 +1,36 @@
 from __future__ import absolute_import, unicode_literals
-import sys
-import unittest
 
+import sys
 sys.path.append('..')
+
 from moodies.moods import Mood, MoodsContainer
 
+# Mood tests
+def test_mood_object_defaults():
+    mood = Mood('testMood', 'testColor')
+    assert mood.name == 'testMood'
+    assert mood.color == 'testColor'
+    assert isinstance(mood.value, int)
+    assert mood.value == 0
+    assert hasattr(mood, 'melody')
 
-class TestMood(unittest.TestCase):
-    def test_mood_elements(self):
-        mood = Mood('testMood', 'testColor')
-        self.assertEqual(mood.name, 'testMood')
-        self.assertEqual(mood.color, 'testColor')
-        self.assertIsInstance(mood.value, int)
-        self.assertEqual(mood.value, 0)
-        self.assertIs(hasattr(mood, 'melody'), True)
 
-class TestMoodsContainer(unittest.TestCase):
-    pass
+# MoodsContainer tests
+def test_moodscontainer_detauls():
+    container = MoodsContainer()
+    assert len(container.moods) > 1
+    default_mood = container.moods['default']
+    assert default_mood.value == 0
 
-if __name__ == '__main__':
-    unittest.main()
+def test_moodscontainer_func():
+    container = MoodsContainer()
+    default_mood = container.moods['default']
+    container.decrease_all_moods(10)
+    assert default_mood.value == 0
+    container.increase('default', 50)
+    assert default_mood.value == 50
+    container.increase('default', 77)
+    assert default_mood.value == 100
+    assert container.compute_top_mood().name == 'default'
+
 
