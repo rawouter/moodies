@@ -3,7 +3,8 @@ from moods import MoodsContainer
 class MoodiesChannel:
 
     """
-    Channel class holding a chat room (pusher channel) and it's moods (MoodsContainer class)
+    Moodies "room" containing moodies users and a mood container representing the average
+    of users moods.
     """
 
     def __init__(self, channel_name):
