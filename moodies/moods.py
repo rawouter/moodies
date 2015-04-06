@@ -1,6 +1,6 @@
 class Percentage(object):
     """
-    Descriptor that holds a value which is a number between 0 and 100
+    Descriptor that holds a value which is a number between 0 and 100 in the object __dict__
     """
     def __init__(self, name='percentage'):
         self.name = name
@@ -43,8 +43,8 @@ class MoodsContainer:
         }
 
     def decrease_all_moods(self, val):
-        for key in self.moods:
-            self.decrease(key, val)
+        for key, mood in self.moods.iteritems():
+            mood.value -= val
 
     def decrease(self, mood_name, val=20):
         self.moods[mood_name].value -= val
