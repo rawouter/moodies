@@ -1,28 +1,30 @@
-class Mood:
+class Percentage(object):
+    """
+    Descriptor that holds a value which is a number between 0 and 100
+    """
+    def __init__(self, initval=0):
+        self.val = initval
+
+    def __get__(self, obj, objtype):
+        return self.val
+
+    def __set__(self, obj, val):
+        if val > 100: val = 100
+        elif val < 0: val = 0
+        self.val = val
+
+
+class Mood(object):
     """
     Container for a specific mood parameters
     """
 
-    def __init__(self, name, color, value=0, melody=''):
+    value = Percentage(0)
+
+    def __init__(self, name, color, melody=''):
         self.name = name
-        self.value = value
         self.color = color
         self.melody = melody
-
-    def decrease(self, val):
-        if val < 0: return
-        if self.value > val:
-            self.value -= val
-        else:
-            self.value = 0
-
-    def increase(self, val):
-        if val < 0: return
-        if self.value < (100-val):
-            self.value += val
-        else:
-            self.value = 100
-
 
 
 class MoodsContainer:
@@ -43,10 +45,10 @@ class MoodsContainer:
             self.decrease(key, val)
 
     def decrease(self, mood_name, val=20):
-        self.moods[mood_name].decrease(val)
+        self.moods[mood_name].value -= val
 
     def increase(self, mood_name, val=20):
-        self.moods[mood_name].increase(val)
+        self.moods[mood_name].value += val
 
     def compute_top_mood(self):
         top_mood = self.moods['default']

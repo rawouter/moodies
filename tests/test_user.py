@@ -8,7 +8,7 @@ from moodies.user import MoodiesUser
 
 @pytest.fixture()
 def user():
-     return MoodiesUser('testUser')
+    return MoodiesUser('testUser')
 
 # MoodiesUser tests
 def test_moodies_user_default(user):
