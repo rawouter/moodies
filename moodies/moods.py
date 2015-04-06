@@ -2,16 +2,18 @@ class Percentage(object):
     """
     Descriptor that holds a value which is a number between 0 and 100
     """
-    def __init__(self, initval=0):
-        self.val = initval
+    def __init__(self, name='percentage'):
+        self.name = name
 
     def __get__(self, obj, objtype):
-        return self.val
+        if self.name not in obj.__dict__:
+            obj.__dict__[self.name] = 0
+        return obj.__dict__[self.name]
 
     def __set__(self, obj, val):
         if val > 100: val = 100
         elif val < 0: val = 0
-        self.val = val
+        obj.__dict__[self.name] = val
 
 
 class Mood(object):
@@ -19,7 +21,7 @@ class Mood(object):
     Container for a specific mood parameters
     """
 
-    value = Percentage(0)
+    value = Percentage('value')
 
     def __init__(self, name, color, melody=''):
         self.name = name
