@@ -22,6 +22,8 @@ def test_mood_object_defaults(mood):
     assert hasattr(mood, 'melody')
 
 def test_mood_object_func(mood):
+    with pytest.raises(AssertionError):
+        mood.value = 'Only numbers are accepted'
     mood.value += 50
     assert mood.value == 50
     mood.value += 77
