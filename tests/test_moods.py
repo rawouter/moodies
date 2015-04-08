@@ -9,6 +9,7 @@ from moodies.moods import Mood, MoodsContainer
 @pytest.fixture()
 def mood():
      return Mood('testMood', 'testColor')
+
 @pytest.fixture()
 def container():
      return MoodsContainer()
